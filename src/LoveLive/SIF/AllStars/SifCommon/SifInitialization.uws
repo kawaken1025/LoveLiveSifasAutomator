@@ -1,0 +1,3 @@
+CALL ../SifLog/SifLogWriter.uws
+CALL ChkImgX.uws
+startup_chkimgx()

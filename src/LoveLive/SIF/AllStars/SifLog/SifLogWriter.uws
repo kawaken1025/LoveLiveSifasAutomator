@@ -1,0 +1,54 @@
+//=========================================
+//
+// comment   : write Log
+// param     : String outputCharacter 
+// return    : 0
+// 
+// Copy Right (C) 2019 All Right Reserved. 
+//   @author k.kawabata @kawaken1025
+//     Create Date : 2019/10/05
+//=========================================
+
+Option LogPath = "C:\log.log"
+Option LogFile = 2 // 1:ログ出力しない, 2:日付（時分秒）付けない, 3:日付（時分秒）を付ける
+
+public isDebugMode = false;
+public SIF_RESULT_OK = 0;
+public mLogPath = "";
+
+CLASS SifLogWriter
+    
+    // 出力先ログパスの取得
+    function SifLogWriter
+        mLogPath = GetOutputPath()
+        result = SIF_RESULT_OK
+    fend
+
+    //=========================================
+    // comment : ログ出力
+    // param   : None
+    // return  : 0
+    //=========================================
+    function LogWriter(logLevel , outputLog)
+
+        GETTIME();
+        date = "" + G_TIME_YY4 + "/" + G_TIME_MM2 + "/" + G_TIME_DD2;
+        time = "" + G_TIME_HH2 + ":" + G_TIME_NN2;
+        dateTime = logLevel + "[" + date + " " + time + "] "; 
+        logText = dateTime + outputLog;
+
+        print logText; // UWSCプリント
+        DOSCMD("echo " + logText + " >> " + mLogPath); // コマンドプロンプトからログファイルへ追記
+        result = SIF_RESULT_OK;
+    fend
+
+    //=========================================
+    // comment : 出力先ディレクトリの取得
+    // param   : None
+    // return  : 出力先ディレクトリパス
+    //=========================================
+    function GetOutputPath()
+        result = GET_CUR_DIR + "\..\var\log\LoveLive\SIF\AllStars\SifMacroLog.log";
+    fend
+
+ENDCLASS
