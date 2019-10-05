@@ -1,6 +1,5 @@
 
-mIsLive = false
-mIsRecv = false
+public mIsLive = false
 while true
 
     // 選曲画面の「決定」ボタンがあるか
