@@ -1,54 +1,61 @@
 
 // ライブ中であるかどうか
 public mIsLive = false
-public threshold = 3
+// 画像認識閾値
+public mThreshold = 3
+// ライブエラー時間
+public mLiveErrorTime = 0
 
-CALL ../SifLog/SifLogWriter.uws
-CALL ChkImgX.uws
-startup_chkimgx()
+// ライブエラー時間の初期化
+// ひとまず前回ライブ開始時から5分間ライブが実行されなければエラーとする
+mLiveErrorTime = GETTIME(300 / 86400)
+// 初期化
+CALL ../SifCommon/SifInitialization.uws
 
 // メイン処理
 while true
 
     // 選曲画面の「決定」ボタンがあるか
-    ifb chkimgx("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950, -1, mThreshold, -1)
         SifLogWriter.LogWriter("[INFO]", "選曲を決定します")
-        BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y)
+        // とりあえず中級を選んでライブ開始
+        BTN(LEFT, CLICK, 1250, 210, 500)
+        BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y,700)
     endif
 
     // ゲストなしで選択する
-    ifb chkimgx("../Images/Live/no_guest.bmp", 0, 1450, 700, 1750, 750, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/no_guest.bmp", 0, 1450, 700, 1750, 750, -1, mThreshold, -1)
         BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y)
     endif
 
     // ライブ開始ボタンがあるか
-    ifb chkimgx("../Images/Live/live_start.bmp", 0, 1270, 925, 1500, 970, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/live_start.bmp", 0, 1270, 925, 1500, 970, -1, mThreshold, -1)
+        liveStartX = G_IMGX_X
+        liveStartY = G_IMGX_Y
+        // オートプレイにチェックが入ってなければチェックをいれる
+        ifb chkimgx("../Images/Live/disable_autoplay.bmp", 0, 480, 910, 540, 970, -1, mThreshold, -1)
+            SifLogWriter.LogWriter("[WARN]", "オートプレイにチェックをいれます")
+            BTN(LEFT, 510, 945, 150)
+        endif
         SifLogWriter.LogWriter("[INFO]", "ライブを開始します")
-        // 3回くらい押してもいいやろ
-        for i = 1 to 3
-            BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y, 150)
-        next
+        BTN(LEFT, CLICK, liveStartX, liveStartY, 150)
         mIsLive = true
+        mLiveErrorTime = GETTIME(300 / 86400);
     endif
 
     // LP不足であれば回復する
-    ifb chkimgx("../Images/Live/use_star.bmp", 0, 830, 770, 1110, 830, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/use_star.bmp", 0, 830, 770, 1110, 830, -1, mThreshold, -1)
         mIsLive = false
         SifLogWriter.LogWriter("[INFO]", "LPを回復します")
         LP_Recovery(G_IMGX_X, G_IMGX_Y)
     endif
 
-    ifb chkimgx("../Images/Live/recovery.bmp", 0, 1200, 770, 1325, 830, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/recovery.bmp", 0, 1200, 770, 1325, 830, -1, mThreshold, -1)
         SifLogWriter.LogWriter("[INFO]", "回復ボタンを押します")
         BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y, 150)
     endif
 
-    // なんか色々ポップアップがでてきたら閉じる
-    ifb chkimgx("../Images/Live/close.bmp", 0, 850, 775, 1070, 830, -1, threshold, -1)
-        SifLogWriter.LogWriter("[INFO]", "閉じるボタンを押します")
-        BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y, 1000)
-    endif
-
+    CheckClose()
     sleep(1)
     // ライブ中であればスキル発動を定期的に押す
     ifb mIsLive
@@ -58,21 +65,32 @@ while true
     CheckLiveEnd();
 wend
 
+// なんか色々ポップアップがでてきたら閉じる
+function CheckClose()
+    ifb chkimgx("../Images/Live/close.bmp", 0, 800, 755, 1070, 900, -1, mThreshold, -1)
+        SifLogWriter.LogWriter("[INFO]", "閉じるボタンを押します")
+        BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y, 1000)
+    endif
+    result = 0
+fend
+
+
 // ライブが終了したかを判定する
 // 終了していれば選曲画面へ戻るまで画面下部をタッチする
 function CheckLiveEnd()
+    CheckReboot()
     // プレイ詳細が表示されたか
-    ifb chkimgx("../Images/Live/play_detail.bmp", 0, 1560, 100, 1735, 160, -1, threshold, -1)
+    ifb chkimgx("../Images/Live/play_detail.bmp", 0, 1560, 100, 1735, 160, -1, mThreshold, -1)
         while true
             // スキップが表示されていればスキップ
-            ifb chkimgx("../Images/Live/skip.bmp", 0, 830, 770, 1110, 830, -1, threshold, -1)
+            ifb chkimgx("../Images/Live/skip.bmp", 0, 830, 770, 1110, 830, -1, mThreshold, -1)
                 SifLogWriter.LogWriter("[INFO]", "スキップボタンを押します")
                 BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y)
             else
                 BTN(LEFT, CLICK, 1000, 950, 100)
             endif
             // 選曲画面に来たらループを抜ける
-            ifb chkimgx("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950, -1, threshold, -1)
+            ifb chkimgx("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950, -1, mThreshold, -1)
                 SifLogWriter.LogWriter("[INFO]", "選曲画面を検知しました")
                 mIsLive = false
                 break
@@ -82,6 +100,48 @@ function CheckLiveEnd()
     result = 0
 fend
 
+// ここらへんの再起動処理はそのうち別クラスへ移動させる
+function CheckReboot()
+    ifb mLiveErrorTime < GETTIME()
+        SifLogWriter.LogWriter("[ERROR]", "アプリを再起動します")
+        ExecReboot()
+    endif
+    result = 0
+fend
+
+function ExecReboot()
+    BTN(LEFT, CLICK, 544, 13)
+    BTN(LEFT, CLICK, 325, 185, 3000)
+    // スタート画面が出るまで待機
+    while true
+        ifb chkimgx("../Images/Common/start_screen.bmp", 0, 1580, 65, 1670, 150, -1, mThreshold, -1)
+            SifLogWriter.LogWriter("[INFO]", "スタート画面を検知しました")
+            BTN(LEFT, CLICK, 1000, 950, 500)
+            sleep(3)
+            break
+        endif
+    wend
+    // ホーム画面かライブ再開画面がでるまで待機
+    while true
+        ifb chkimgx("../Images/Common/yes.bmp", 0, 1200, 775, 1340, 830, -1, mThreshold, -1)
+            SifLogWriter.LogWriter("[INFO]", "ライブ再開画面を検知しました。ライブを再開します")
+            BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y)
+            sleep(3)
+            break
+        endif
+        ifb chkimgx("../Images/Home/live.bmp", 0, 1420, 796, 1775, 915, -1, mThreshold, -1)
+            SifLogWriter.LogWriter("[INFO]", "ホーム画面を検知しました。選曲画面へ遷移します")
+            BTN(LEFT, CLICK, G_IMGX_X, G_IMGX_Y, 1500)
+            sleep(1)
+            BTN(LEFT, CLICK, 1360, 690)
+            sleep(3)
+            break
+        endif
+        mLiveErrorTime = GETTIME(300 / 86400)
+    wend
+    
+    result = 0
+fend
 
 // LP回復処理 (石を砕く)
 function LP_Recovery(x, y)
