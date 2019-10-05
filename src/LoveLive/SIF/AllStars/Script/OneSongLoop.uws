@@ -1,3 +1,6 @@
+
+mIsLive = false
+mIsRecv = false
 while true
 
     // 選曲画面の「決定」ボタンがあるか
@@ -16,14 +19,21 @@ while true
         for i = 1 to 3
             BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y, 150)
         next
+        mIsLive = true
     endif
 
     // LP不足であれば回復する
     ifb chkimg("../Images/Live/use_star.bmp", 0, 830, 770, 1110, 830)
+        mIsLive = false
         LP_Recovery(G_IMG_X, G_IMG_Y)
     endif
-    
+
     sleep(1)
+    // ライブ中であればスキル発動を定期的に押す
+    ifb mIsLive
+        BTN(LEFT, CLICK, 950, 900, 200)
+    endif
+    // ライブが終了したか判定
     CheckLiveEnd();
 wend
 
@@ -45,7 +55,8 @@ function CheckLiveEnd()
             endif
         wend
     endif
-    result = 0;
+    mIsLive = false
+    result = 0
 fend
 
 function LP_Recovery(x, y)
