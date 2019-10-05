@@ -1,27 +1,29 @@
 while true
 
     // 選曲画面の「決定」ボタンがあるか
-    ifb chkimg("../Images/MusicSelect/decision.bmp", 0, 1400, 880, 1600, 950)
+    ifb chkimg("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950)
         BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
     endif
 
     // ゲストなしで選択する
-    ifb chkimg("../Images/MusicSelect/no_guest.bmp", 0, 1450, 700, 1750, 750)
+    ifb chkimg("../Images/Live/no_guest.bmp", 0, 1450, 700, 1750, 750)
         BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
     endif
 
     // ライブ開始ボタンがあるか
-    ifb chkimg("../Images/MusicSelect/live_start.bmp", 0, 1270, 925, 1500, 970)
-        BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
-        // ライブが始まったらとりあえず1分待機する
-        sleep(60)
+    ifb chkimg("../Images/Live/live_start.bmp", 0, 1270, 925, 1500, 970)
+        // 3回くらい押してもいいやろ
+        for i = 1 to 3
+            BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y, 150)
+        next
     endif
 
     // LP不足であれば回復する
-    ifb chkimg("../Images/MusicSelect/use_star.bmp", 0, 830, 770, 1110, 830)
+    ifb chkimg("../Images/Live/use_star.bmp", 0, 830, 770, 1110, 830)
         LP_Recovery(G_IMG_X, G_IMG_Y)
     endif
     
+    sleep(1)
     CheckLiveEnd();
 wend
 
@@ -29,16 +31,16 @@ wend
 // 終了していれば選曲画面へ戻るまで画面下部をタッチする
 function CheckLiveEnd()
 
-    ifb chkimg("../Images/MusicSelect/play_detail.bmp", 0, 1560, 100, 1735, 160)
+    ifb chkimg("../Images/Live/play_detail.bmp", 0, 1560, 100, 1735, 160)
         while true
-            ifb chkimg("../Images/MusicSelect/skip.bmp", 0, 830, 770, 1110, 830)
+            ifb chkimg("../Images/Live/skip.bmp", 0, 830, 770, 1110, 830)
                 BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
             else
                 BTN(LEFT, CLICK, 1000, 920)
             endif
             sleep(1)
             // 選曲画面に来たらループを抜ける
-            ifb chkimg("../Images/MusicSelect/decision.bmp", 0, 1400, 880, 1600, 950)
+            ifb chkimg("../Images/Live/decision.bmp", 0, 1400, 880, 1600, 950)
                 break
             endif
         wend
@@ -48,8 +50,8 @@ fend
 
 function LP_Recovery(x, y)
     BTN(LEFT, CLICK, x, y)
-    BTN(LEFT, CLICK, 1250, 785, 1000)
-    BTN(LEFT, CLICK, 1000, 800, 1000)
+    BTN(LEFT, CLICK, 1250, 785, 2500)
+    BTN(LEFT, CLICK, 1000, 800, 2500)
     BTN(LEFT, CLICK, x, y)    
     result = 0;
 fend
