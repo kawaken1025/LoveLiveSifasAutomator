@@ -1,29 +1,55 @@
-WHILE TRUE
-SLEEP(1)
+while true
 
-IF CHKIMG("楽曲決定.bmp",0,0,0,1700,1000) THEN BTN(LEFT,CLICK,G_IMG_X,G_IMG_Y)
+    // 選曲画面の「決定」ボタンがあるか
+    ifb chkimg("../Images/MusicSelect/decision.bmp", 0, 1400, 880, 1600, 950)
+        BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
+    endif
 
-SLEEP(10)
+    // ゲストなしで選択する
+    ifb chkimg("../Images/MusicSelect/no_guest.bmp", 0, 1450, 700, 1750, 750)
+        BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
+    endif
 
-    WHILE TRUE
-     IF CHKIMG("gesuto.bmp",0,0,0,1700,500) THEN BTN(LEFT,CLICK,G_IMG_X,G_IMG_Y)
-      IF CHKIMG("楽曲開始.bmp",0,0,0,1700,1000) THEN BTN(LEFT,CLICK,G_IMG_X,G_IMG_Y)
+    // ライブ開始ボタンがあるか
+    ifb chkimg("../Images/MusicSelect/live_start.bmp", 0, 1270, 925, 1500, 970)
+        BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
+        // ライブが始まったらとりあえず1分待機する
+        sleep(60)
+    endif
 
-      IF CHKIMG("LP無し.bmp",0,0,0,1700,1000) THEN call 回復
-
-      BTN(LEFT,CLICK,13800,940,1000)
-  IF CHKIMG("ライブ.bmp",0,0,0,1700,1000) THEN　 BREAK
-    IF CHKIMG("中級.bmp",0,0,0,1700,1000) THEN　 BREAK
-        IF CHKIMG("ライブ１.bmp",0,0,0,1700,1000) THEN　 BREAK
-           IF CHKIMG("詳細.bmp",0,0,0,1700,1000) THEN　 BREAK
-    wend
-
-WHILE TRUE
-BTN(LEFT,CLICK,970,960,1000)
-
-IF CHKIMG("とじる.bmp",0,0,0,1700,1000) THEN BTN(LEFT,CLICK,G_IMG_X,G_IMG_Y)
-IF CHKIMG("楽曲決定.bmp",0,0,0,1700,1000) THEN　 BREAK
+    // LP不足であれば回復する
+    ifb chkimg("../Images/MusicSelect/use_star.bmp", 0, 830, 770, 1110, 830)
+        LP_Recovery(G_IMG_X, G_IMG_Y)
+    endif
+    
+    CheckLiveEnd();
 wend
 
-SLEEP(1)
-wend
+// ライブが終了したかを判定する
+// 終了していれば選曲画面へ戻るまで画面下部をタッチする
+function CheckLiveEnd()
+
+    ifb chkimg("../Images/MusicSelect/play_detail.bmp", 0, 1560, 100, 1735, 160)
+        while true
+            ifb chkimg("../Images/MusicSelect/skip.bmp", 0, 830, 770, 1110, 830)
+                BTN(LEFT, CLICK, G_IMG_X, G_IMG_Y)
+            else
+                BTN(LEFT, CLICK, 1000, 920)
+            endif
+            sleep(1)
+            // 選曲画面に来たらループを抜ける
+            ifb chkimg("../Images/MusicSelect/decision.bmp", 0, 1400, 880, 1600, 950)
+                break
+            endif
+        wend
+    endif
+    result = 0;
+fend
+
+function LP_Recovery(x, y)
+    BTN(LEFT, CLICK, x, y)
+    BTN(LEFT, CLICK, 1250, 785, 1000)
+    BTN(LEFT, CLICK, 1000, 800, 1000)
+    BTN(LEFT, CLICK, x, y)    
+    result = 0;
+fend
